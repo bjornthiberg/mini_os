@@ -3,9 +3,19 @@
 
 use core::panic::PanicInfo;
 
-#[no_mangle] // don't mangle function name
+static HELLO: &[u8] = b"Hello World!";
+
+#[no_mangle]
 pub extern "C" fn _start() -> ! {
-    // linker looks for a function named `_start` by default
+    let vga_buffer = 0xb8000 as *mut u8; // cast to raw pointer
+
+    for (i, &byte) in HELLO.iter().enumerate() {
+        unsafe {
+            *vga_buffer.offset(i as isize * 2) = byte; // write string byte
+            *vga_buffer.offset(i as isize * 2 + 1) = 0xb; // color byte
+        }
+    }
+
     loop {}
 }
 
